@@ -1,0 +1,18 @@
+.cart-drawer-booster {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.08);
+}
+
+.cart-drawer-booster__shipping p {
+  margin: 0 0 0.8rem;
+  font-size: 1.3rem;
+  line-height: 1.4;
+}
+
+.cart-drawer-booster__shipping strong {
+  font-weight: 700;
+}
+
+.cart-drawer-booster__shipping .success {
+  font-weight: 600;
+}
