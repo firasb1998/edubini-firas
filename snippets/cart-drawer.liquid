@@ -75,10 +75,7 @@
         </button>
       </div>
      {% if cart.item_count > 0 %}
-  {% render 'cart-drawer-booster',
-    shipping_threshold: shipping_threshold,
-    upsell_product: upsell_product
-  %}
+  {% render 'cart-drawer-booster' %}
 {% endif %} {% comment %}...{% endcomment %}
       <cart-drawer-items
         {% if cart == empty %}

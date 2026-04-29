@@ -1,5 +1,5 @@
 {% liquid
-  assign threshold = shipping_threshold | times: 100
+  assign threshold = settings.cart_booster_shipping_threshold | times: 100
   assign cart_total = cart.total_price
   assign amount_remaining = threshold | minus: cart_total
 

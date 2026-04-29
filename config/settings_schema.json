@@ -8,6 +8,22 @@
     "theme_support_url": "https://support.shopify.com/"
   },
   {
+    "name": "Cart Booster",
+    "settings": [
+      {
+        "type": "number",
+        "id": "cart_booster_shipping_threshold",
+        "label": "Free shipping threshold",
+        "default": 50
+      },
+      {
+        "type": "product",
+        "id": "cart_booster_upsell_product",
+        "label": "Upsell product"
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.logo.name",
     "settings": [
       {
