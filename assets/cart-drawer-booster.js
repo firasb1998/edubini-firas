@@ -1,10 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
-  restoreUpsellState();
+  initializeUpsellState();
 });
 
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-cart-upsell-button]");
-  if (!button) return;
+  if (!button || button.disabled) return;
 
   const variantId = button.dataset.variantId;
   if (!variantId) return;
@@ -13,6 +13,14 @@ document.addEventListener("click", async (event) => {
   button.textContent = "Wird hinzugefügt...";
 
   try {
+    const cartBeforeAdd = await fetchCart();
+
+    if (!canAddUpsellProduct(button, cartBeforeAdd)) {
+      button.textContent = "Nicht verfügbar";
+      button.disabled = true;
+      return;
+    }
+
     const addResponse = await fetch("/cart/add.js", {
       method: "POST",
       headers: {
@@ -32,7 +40,7 @@ document.addEventListener("click", async (event) => {
     sessionStorage.setItem(`upsell-added-${variantId}`, "true");
 
     await refreshCartDrawer();
-    restoreUpsellState();
+    await initializeUpsellState();
   } catch (error) {
     console.error(error);
 
@@ -42,13 +50,31 @@ document.addEventListener("click", async (event) => {
       button.textContent = "Hinzufügen";
       button.disabled = false;
     }, 2000);
-
-    setTimeout(() => {
-      button.textContent = "Hinzufügen";
-      button.disabled = false;
-    }, 1500);
   }
 });
+
+async function fetchCart() {
+  const response = await fetch("/cart.js", {
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Cart konnte nicht geladen werden");
+  }
+
+  return response.json();
+}
+
+async function initializeUpsellState() {
+  try {
+    const cart = await fetchCart();
+    updateUpsellButtonState(cart);
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 async function refreshCartDrawer() {
   const response = await fetch(
@@ -79,26 +105,62 @@ function updateSection(sectionId, selector, sections) {
   }
 }
 
-function restoreUpsellState() {
+function canAddUpsellProduct(button, cart) {
+  const variantId = Number(button.dataset.variantId);
+  const inventoryQuantity = Number(button.dataset.inventoryQuantity);
+  const inventoryPolicy = button.dataset.inventoryPolicy;
+
+  const cartItem = cart.items.find((item) => item.variant_id === variantId);
+  const cartQuantity = cartItem ? cartItem.quantity : 0;
+
+  const hasLimitedInventory =
+    inventoryPolicy !== "continue" && !Number.isNaN(inventoryQuantity);
+
+  if (hasLimitedInventory && cartQuantity >= inventoryQuantity) {
+    return false;
+  }
+
+  return button.dataset.available === "true";
+}
+
+function updateUpsellButtonState(cart) {
   const button = document.querySelector("[data-cart-upsell-button]");
   if (!button) return;
 
-  const variantId = button.dataset.variantId;
+  const variantId = Number(button.dataset.variantId);
   if (!variantId) return;
 
-  const isAdded = sessionStorage.getItem(`upsell-added-${variantId}`);
+  const cartItem = cart.items.find((item) => item.variant_id === variantId);
+  const cartQuantity = cartItem ? cartItem.quantity : 0;
 
-  // 🔥 NEU: Verfügbarkeit checken
-  const isAvailable = button.dataset.available !== "false";
+  const isAvailable = button.dataset.available === "true";
+  const inventoryQuantity = Number(button.dataset.inventoryQuantity);
+  const inventoryPolicy = button.dataset.inventoryPolicy;
 
-  if (!isAvailable) {
+  const hasLimitedInventory =
+    inventoryPolicy !== "continue" && !Number.isNaN(inventoryQuantity);
+
+  const isSoldOut =
+    !isAvailable ||
+    (hasLimitedInventory && inventoryQuantity <= 0) ||
+    (hasLimitedInventory && cartQuantity >= inventoryQuantity);
+
+  if (isSoldOut) {
     button.textContent = "Nicht verfügbar";
     button.disabled = true;
     return;
   }
 
-  if (isAdded) {
+  const wasAdded =
+    sessionStorage.getItem(`upsell-added-${variantId}`) === "true" ||
+    cartQuantity > 0;
+
+  if (wasAdded) {
     button.textContent = "Hinzugefügt ✓";
     button.disabled = true;
+    return;
   }
+
+  button.textContent = "Hinzufügen";
+  button.disabled = false;
 }
