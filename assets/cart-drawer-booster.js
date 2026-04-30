@@ -88,6 +88,15 @@ function restoreUpsellState() {
 
   const isAdded = sessionStorage.getItem(`upsell-added-${variantId}`);
 
+  // 🔥 NEU: Verfügbarkeit checken
+  const isAvailable = button.dataset.available !== "false";
+
+  if (!isAvailable) {
+    button.textContent = "Nicht verfügbar";
+    button.disabled = true;
+    return;
+  }
+
   if (isAdded) {
     button.textContent = "Hinzugefügt ✓";
     button.disabled = true;
