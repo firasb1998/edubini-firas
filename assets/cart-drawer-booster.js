@@ -36,7 +36,12 @@ document.addEventListener("click", async (event) => {
   } catch (error) {
     console.error(error);
 
-    button.textContent = "Fehler";
+    button.textContent = "Nicht verfügbar";
+
+    setTimeout(() => {
+      button.textContent = "Hinzufügen";
+      button.disabled = false;
+    }, 2000);
 
     setTimeout(() => {
       button.textContent = "Hinzufügen";
