@@ -1,0 +1,45 @@
+{% assign upsell_product = settings.cart_booster_upsell_product %}
+
+{% if upsell_product != blank %}
+  <div class="cart-drawer-upsell">
+
+    <p class="cart-drawer-upsell__heading">
+      Wird oft hinzugefügt:
+    </p>
+
+    <div class="cart-drawer-upsell__card">
+
+      {% if upsell_product.featured_image %}
+        <img
+  src="{{ upsell_product.featured_image | image_url: width: 120 }}"
+  alt="{{ upsell_product.title | escape }}"
+  class="cart-drawer-upsell__image"
+  width="60"
+  height="60"
+  loading="lazy"
+>
+      {% endif %}
+
+      <div class="cart-drawer-upsell__info">
+        <p class="cart-drawer-upsell__title">
+          {{ upsell_product.title }}
+        </p>
+
+        <p class="cart-drawer-upsell__price">
+          {{ upsell_product.price | money }}
+        </p>
+      </div>
+
+      <button
+  type="button"
+  class="button button--primary cart-drawer-upsell__button"
+  data-cart-upsell-button
+  data-variant-id="{{ upsell_product.selected_or_first_available_variant.id }}"
+>
+  Hinzufügen
+</button>
+
+    </div>
+
+  </div>
+{% endif %}
